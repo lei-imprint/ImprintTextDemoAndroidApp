@@ -37,6 +37,9 @@ import com.google.gson.annotations.SerializedName
  * For some layout level configuration (text alignment), can refer to params in [TextStyle],
  * consumed by [ClickableText]
  *
+ * Client side implementation is inspired by
+ * [Text in Compose](https://developer.android.com/jetpack/compose/text#user-interaction)
+ *
  * Usage steps:
  * 1. sever side define and pass down imprint_text_data;
  * 2. client side parse imprint_text_data into [ImprintTextData];
@@ -58,6 +61,8 @@ fun ImprintText(data: ImprintTextData) {
 
   fun buildText() = buildAnnotatedString {
     val str = data.string
+    // concern: this part might not be robust, since now we regard % as keyword but it may cause
+    // collision with regular % symbol
     val countArgs = str.count { c -> c == '%' }
     if (countArgs != data.args.size) {
       print("Args Not match!")
@@ -65,7 +70,7 @@ fun ImprintText(data: ImprintTextData) {
     }
     var last = 0
     data.args.forEachIndexed { index, child ->
-      val placeholder = "{%s$index}"
+      val placeholder = "{%$index}"
       val p1 = str.indexOf(placeholder)
       withStyle(buildStyledSpan(data)) { append(str.substring(last, p1)) }
       if (child.link != null) {
