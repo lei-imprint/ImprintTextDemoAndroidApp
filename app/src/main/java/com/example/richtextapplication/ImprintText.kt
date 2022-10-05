@@ -9,12 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.*
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.gson.annotations.SerializedName
@@ -36,6 +34,8 @@ import com.google.gson.annotations.SerializedName
  * properly;
  *
  * For completed configuration of text level (not layout level), can refer to params in [SpanStyle]
+ * For some layout level configuration (text alignment), can refer to params in [TextStyle],
+ * consumed by [ClickableText]
  *
  * Usage steps:
  * 1. sever side define and pass down imprint_text_data;
@@ -86,17 +86,25 @@ fun ImprintText(data: ImprintTextData) {
   val annotatedText = buildText()
   val uriHandler = LocalUriHandler.current
   var modifier = Modifier
+    .padding(data.margin.dp)
     .background(color = Color(data.background))
     .padding(data.padding.dp)
-  if (data.layoutWidth == -1L) {
+  if (data.layoutWidth == -1) {
     modifier = modifier.fillMaxWidth()
   } else if (data.layoutWidth > 0) {
-    modifier = modifier.width(data.layoutWidth.toInt().dp)
+    modifier = modifier.width(data.layoutWidth.dp)
+  }
+
+  val textAlign = when (data.textAlign) {
+    3 -> TextAlign.Center
+    6 -> TextAlign.End
+    else -> TextAlign.Start
   }
 
   ClickableText(
     text = annotatedText,
     modifier = modifier,
+    style = TextStyle(textAlign = textAlign),
     onClick = { offset ->
       for (tag in getMap().keys) {
         annotatedText
@@ -113,10 +121,13 @@ data class ImprintTextData(
   @SerializedName("color") val color: Long = 0xFF000000,
   @SerializedName("bold") val bold: Boolean = false,
   @SerializedName("underline") val underline: Boolean = false,
+  // 3 -> Center; 6 -> End; else -> Start, same as in [TextAlign]
+  @SerializedName("text_align") val textAlign: Int = 1,
   @SerializedName("link") val link: String? = null,
   @SerializedName("background") val background: Long = 0x00000000, // only applied at top level
-  // 0 = wrap content; 1 = match parent; > 0 means custom width; only applied at top level
-  @SerializedName("layout_width") val layoutWidth: Long = 0,
+  // 0 = wrap content; -1L = match parent; > 0 means custom width; only applied at top level
+  @SerializedName("layout_width") val layoutWidth: Int = 0,
+  @SerializedName("margin") val margin: Int = 0, // only applied at top level
   @SerializedName("padding") val padding: Int = 0, // only applied at top level
   // can have 2nd level embedded texts with different styles, can be used such as: title, link
   @SerializedName("args") val args: List<ImprintTextData> = emptyList(),

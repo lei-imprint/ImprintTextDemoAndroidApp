@@ -43,7 +43,8 @@ class MainActivity : ComponentActivity() {
 val test1 = ImprintTextData(
   string = "Hello {%s0}\nThis is a {%s1}",
   background = 0x220000FF,
-  layoutWidth = 200L,
+  layoutWidth = 200,
+  margin = 16,
   padding = 8,
   args = listOf(
     ImprintTextData(
@@ -68,6 +69,7 @@ val test2 = ImprintTextData(
 
 val test3 = ImprintTextData(
   string = "{%s0}\n\n{%s1}{%s2}.",
+  textAlign = 3,
   args = listOf(
     ImprintTextData("Title", fontSize = 20, bold = true),
     ImprintTextData(
